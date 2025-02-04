@@ -1,0 +1,105 @@
+#!/bin/bash
+add_user()
+{
+user="$1"
+pass="$2"
+# defpass ebaid son 3 karakteri alınıyor kullanıcı parolası yapılıyor
+defpass=${pass:29:32} 
+if [ ! -d /home/$user ] ; then
+            useradd -m $user -s /bin/bash -p $(openssl passwd "$defpass") -U -d /home/$user
+            useradd $user-qr -s /bin/bash -p $(openssl passwd "$pass") -d /home/$user
+            mkdir -p /home/$user
+            chown $user -R /home/$user
+            chmod 755 /home/$user
+            uida=$(grep "^$user:" /etc/passwd | cut -f 3 -d ":")
+            uidb=$(grep "^$user-qr:" /etc/passwd | cut -f 3 -d ":")
+            sed -i "s/:$uidb:/:$uida:/g" /etc/passwd
+            for g in floppy audio video plugdev netdev $user; do usermod -aG $g $user-qr || true;usermod -aG $g $user || true;done
+           # usermod $user-qr -p $(openssl passwd -6 "$pass")
+       fi
+}
+#****************************************************************
+greeter_login()
+{
+/usr/bin/sshlogin $1 $2 &
+}   
+read MESSAGE
+echo "PID: $$"
+echo "$MESSAGE"
+type=$(echo $MESSAGE|cut -d":" -f1)
+#****************************************************************
+if [ "$type" == "ebaqronline" ]
+then
+user=$(echo $MESSAGE|cut -d":" -f2)
+psw=$(echo $MESSAGE|cut -d":" -f3)
+
+echo "Type: $type"
+echo "User: $user"
+echo "Password: $psw"
+add_user $user $psw
+greeter_login "$user-qr" $psw
+fi
+#****************************************************************
+if [ "$type" == "ebaqrebaqr" ]
+then
+user=$(echo $MESSAGE|cut -d":" -f2)
+#psw=$(echo $MESSAGE|cut -d":" -f3)
+psw=$(cat /etc/qrpsw)
+user="ebaqr"
+echo "Type: $type"
+echo "User: $user"
+echo "Password: $psw"
+greeter_login $user $psw
+fi
+#****************************************************************
+if [ "$type" == "qrcode" ]
+then
+user=$(echo $MESSAGE|cut -d":" -f2)
+psw=$(echo $MESSAGE|cut -d":" -f3)
+
+echo "Type: $type"
+echo "User: $user"
+echo "Password: $psw"
+greeter_login $user $psw
+fi
+
+#****************************************************************
+if [ "$type" == "usbkey" ]
+then
+user=$(echo $MESSAGE|cut -d":" -f2)
+psw=$(echo $MESSAGE|cut -d":" -f3)
+
+echo "Type: $type"
+echo "User: $user"
+echo "Password: $psw"
+greeter_login $user $psw
+fi
+#**************************************************************
+if [ "$type" == "kurumkod" ]
+then
+kurumkod=$(echo $MESSAGE|cut -d":" -f2)
+#psw=$(echo $MESSAGE|cut -d":" -f3)
+
+echo "Type: $type"
+echo "kurumkod: $kurumkod"
+#echo "Password: $psw"
+echo "$kurumkod">/etc/qrkilit.conf
+fi
+
+#**************************************************************
+if [ "$type" == "qrkilitupdate" ]
+then
+version=$(echo $MESSAGE|cut -d":" -f2)
+#psw=$(echo $MESSAGE|cut -d":" -f3)
+
+echo "Type: $type"
+echo "version: $version"
+#echo "Password: $psw"
+apt update
+wget https://github.com/bayramkarahan/pardus-lightdm-greeter-qrkilit/releases/download/current/pardus-lightdm-greeter-qrkilit_${version}_all.deb -O /tmp/qrkilit.deb
+apt install /tmp/qrkilit.deb -y
+fi
+
+#$MESSAGE &
+#sleep 4 
+#$MESSAGE&

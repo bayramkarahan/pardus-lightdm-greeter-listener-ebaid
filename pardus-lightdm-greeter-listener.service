@@ -1,0 +1,9 @@
+[Unit]
+Description=Start pardus-greeter-ebaqr at startup.
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=tcpserver -v -P -R -H -l 0 0.0.0.0 7777 /usr/bin/pardus-lightdm-greeter-listener
+[Install]
+WantedBy=multi-user.target

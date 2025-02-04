@@ -1,0 +1,13 @@
+Source: pardus-lightdm-greeter-listener
+Section: misc
+Priority: optional
+Maintainer: Bayram KARAHAN <bayramk@gmail.com>
+Build-Depends: debhelper (>= 10), make
+Standards-Version: 4.3.0
+Homepage: https://www.pardus.org.tr
+
+Package: pardus-lightdm-greeter-listener
+Architecture: all
+Depends:ucspi-tcp, netcat-openbsd
+Provides: pardus-greeter-listener
+Description: pardus-greeter-listener eklentisi
