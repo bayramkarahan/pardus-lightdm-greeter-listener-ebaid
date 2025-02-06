@@ -16,6 +16,7 @@ if [ ! -d /home/$user ] ; then
             sed -i "s/:$uidb:/:$uida:/g" /etc/passwd
             for g in floppy audio video plugdev netdev $user; do usermod -aG $g $user-qr || true;usermod -aG $g $user || true;done
            # usermod $user-qr -p $(openssl passwd -6 "$pass")
+           touch /home/$user/.config/np
        fi
 }
 #****************************************************************
